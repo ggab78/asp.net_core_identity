@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IdentityNetCore.Models;
-using IdentityNetCore.Service;
+//using IdentityNetCore.Service;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,6 +11,16 @@ namespace IdentityNetCore.Controllers
 {
     public class IdentityController : Controller
     {
+
+       private readonly UserManager<IdentityUser> _userManager;
+
+      public IdentityController(UserManager<IdentityUser> userManager)
+        {
+            _userManager = userManager;
+        }
+
+
+
         public async Task<IActionResult> Signup()
         {
            var model = new SignUpViewModel();
@@ -20,6 +30,23 @@ namespace IdentityNetCore.Controllers
         [HttpPost]
         public async Task<IActionResult> Signup(SignUpViewModel model)
         {
+
+           if(ModelState.IsValid){
+              if((await _userManager.FindByEmailAsync(model.Email))!=null){
+                 var user = new IdentityUser {
+                    Email=model.Email,
+                    UserName=model.Email
+                 };
+                var result = await _userManager.CreateAsync(user, model.Password);
+               if(result.Succeeded)
+               {
+                  return RedirectToAction("Signin");
+               }
+               ModelState.AddModelError("Signup", string.Join("", result.Errors.Select(x=>x.Description)));
+               return View(model);
+              }
+           }
+            
            return View(model);
         }
        
