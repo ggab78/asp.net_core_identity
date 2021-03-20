@@ -37,7 +37,10 @@ namespace IdentityNetCore
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(3);
 
             });
-
+            services.ConfigureApplicationCookie(option=>{
+                   option.LoginPath="/Identity/Signin";
+                   option.AccessDeniedPath="/Identity/AccessDenied"; 
+            });
 
             services.AddControllersWithViews();
         }
