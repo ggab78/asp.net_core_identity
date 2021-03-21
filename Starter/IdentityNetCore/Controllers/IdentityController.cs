@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
 using IdentityNetCore.Models;
 using IdentityNetCore.Service;
 using Microsoft.AspNetCore.Identity;
@@ -60,7 +61,11 @@ namespace IdentityNetCore.Controllers
                     var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     if (result.Succeeded)
                     {
-                        //adds user to the role    
+                        //create clain and add user to claim
+                        var claim = new Claim("Department", model.Department);
+                        await _userManager.AddClaimAsync(user, claim);
+                        
+                        //add user to the role    
                         await _userManager.AddToRoleAsync(user, model.Role);
 
                         var confirmationLink = Url.ActionLink("ConfirmEmail", "Identity", new { userId = user.Id, @token = token });
@@ -94,19 +99,27 @@ namespace IdentityNetCore.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await _userManager.FindByEmailAsync(model.Username);
+               
                 var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberMe, false);
-                var isMember = await _userManager.IsInRoleAsync(user, "Member");
-                var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+                
 
                 if (result.Succeeded)
                 {
+                    var user = await _userManager.FindByEmailAsync(model.Username);
+                    var userClaims = await _userManager.GetClaimsAsync(user);
 
-                    if (isMember)
+                    if(!userClaims.Any(x=>x.Type=="Department"))
+                    {
+                        ModelState.AddModelError("Claim","User not in Department");
+                        return View(model);
+                    }
+                    
+                    if (await _userManager.IsInRoleAsync(user, "Member"))
                     {
                         return RedirectToAction("Member", "Home");
                     }
-                    else if (isAdmin)
+                    
+                    if (await _userManager.IsInRoleAsync(user, "Admin"))
                     {
                         return RedirectToAction("Admin", "Home");
                     }
