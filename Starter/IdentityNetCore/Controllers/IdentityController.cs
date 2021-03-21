@@ -108,12 +108,12 @@ namespace IdentityNetCore.Controllers
                     var user = await _userManager.FindByEmailAsync(model.Username);
                     var userClaims = await _userManager.GetClaimsAsync(user);
 
-                    if(!userClaims.Any(x=>x.Type=="Department"))
-                    {
-                        ModelState.AddModelError("Claim","User not in Department");
-                        return View(model);
-                    }
-                    
+                    // if(!userClaims.Any(x=>x.Type=="Department"))
+                    // {
+                    //     ModelState.AddModelError("Claim","User not in Department");
+                    //     return View(model);
+                    // }
+
                     if (await _userManager.IsInRoleAsync(user, "Member"))
                     {
                         return RedirectToAction("Member", "Home");
