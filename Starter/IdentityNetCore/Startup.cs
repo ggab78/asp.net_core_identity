@@ -41,7 +41,8 @@ namespace IdentityNetCore
             });
             services.ConfigureApplicationCookie(option=>{
                    option.LoginPath="/Identity/Signin";
-                   option.AccessDeniedPath="/Identity/AccessDenied"; 
+                   option.AccessDeniedPath="/Identity/AccessDenied";
+                   option.ExpireTimeSpan=TimeSpan.FromMinutes(30);
             });
             services.Configure<SmtpOptions>(Configuration.GetSection("Smtp"));
             services.AddSingleton<IEmailSender, SmtpEmailSender>();
